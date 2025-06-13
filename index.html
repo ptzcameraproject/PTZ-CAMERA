@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Doggy Cam - Thermal</title>
+  <title>Doggy Cam - BW Thermal</title>
   <style>
     body {
       background-color: #7E8A6A;
@@ -15,22 +15,148 @@
     }
 
     h1 {
-      font-size: 24px;
+      font-size: 26px;
       margin: 10px 0;
     }
 
-    #canvas {
+    .main-row {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 0 10px;
+      flex-wrap: wrap;
+    }
+
+    .arrows {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .arrow-row {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    canvas {
+      width: 300px;
+      max-width: 90vw;
       background: black;
-      width: 90vw;
-      max-width: 400px;
-      border: 3px solid white;
+      border: 4px solid white;
+    }
+
+    .tilt-slider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .tilt-slider input {
+      writing-mode: bt-lr;
+      transform: rotate(270deg);
+      height: 140px;
+    }
+
+    .sliders, .controls {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .controls {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .controls .buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    button {
+      background-color: #C8D6AF;
+      border: none;
+      border-radius: 8px;
+      padding: 10px 16px;
+      font-size: 18px;
+      font-weight: bold;
+      box-shadow: 2px 2px 4px #444;
+      min-width: 60px;
+    }
+
+    button:active {
+      background-color: #AAB694;
+    }
+
+    .hint {
+      font-size: 12px;
+      text-align: center;
+      margin-top: 5px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    input[type="range"] {
+      accent-color: #444;
     }
   </style>
 </head>
 <body>
 
-  <h1>DOGGY CAM (Simulated Thermal View)</h1>
-  <canvas id="canvas" width="320" height="240"></canvas>
+  <h1>DOGGY CAM (BW Thermal Filter)</h1>
+
+  <div class="main-row">
+    <!-- Arrows -->
+    <div class="arrows">
+      <button>▲</button>
+      <div class="arrow-row">
+        <button>◀</button>
+        <button>▶</button>
+      </div>
+      <button>▼</button>
+    </div>
+
+    <!-- Canvas (thermal video) -->
+    <canvas id="canvas" width="320" height="240"></canvas>
+
+    <!-- Tilt Slider -->
+    <div class="tilt-slider">
+      <label for="tilt">Tilt (↕)</label>
+      <input type="range" id="tilt" min="-37.5" max="37.5" step="0.1" />
+    </div>
+  </div>
+
+  <!-- Pan Slider -->
+  <div class="sliders">
+    <label for="pan">Pan (⇔)</label>
+    <input type="range" id="pan" min="-180" max="180" step="0.1" style="width: 80%;" />
+  </div>
+
+  <!-- Control Buttons -->
+  <div class="controls">
+    <div class="buttons">
+      <button>Center Pan</button>
+      <button>Center All</button>
+      <button>Center Tilt</button>
+      <button>Exit</button>
+    </div>
+    <div class="hint">
+      CTRL+P &nbsp; | &nbsp; CTRL+A &nbsp; | &nbsp; CTRL+T &nbsp; | &nbsp; CTRL+E
+    </div>
+    <div style="margin-top: 15px;">
+      <button onclick="toggleThermal()">Toggle Thermal Filter</button>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById('canvas');
@@ -39,39 +165,33 @@
     video.setAttribute("playsinline", "");
     video.setAttribute("autoplay", "");
 
-    function applyThermalEffect(imageData) {
+    let thermalEnabled = true;
+
+    function applyBlackWhiteThermal(imageData) {
       for (let i = 0; i < imageData.data.length; i += 4) {
         const r = imageData.data[i];
         const g = imageData.data[i + 1];
         const b = imageData.data[i + 2];
-
-        const intensity = (r + g + b) / 3;
-
-        let newR = 0, newG = 0, newB = 0;
-
-        if (intensity < 85) {
-          newB = 255;
-          newG = Math.floor((intensity / 85) * 255);
-        } else if (intensity < 170) {
-          newG = 255;
-          newB = Math.floor(((170 - intensity) / 85) * 255);
-        } else {
-          newR = 255;
-          newG = Math.floor(((255 - intensity) / 85) * 255);
-        }
-
-        imageData.data[i]     = newR;
-        imageData.data[i + 1] = newG;
-        imageData.data[i + 2] = newB;
+        const avg = (r + g + b) / 3;
+        const value = avg > 128 ? 255 : avg * 2;
+        imageData.data[i] = value;
+        imageData.data[i + 1] = value;
+        imageData.data[i + 2] = value;
       }
     }
 
     function drawFrame() {
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
       const frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      applyThermalEffect(frame);
+      if (thermalEnabled) {
+        applyBlackWhiteThermal(frame);
+      }
       ctx.putImageData(frame, 0, 0);
       requestAnimationFrame(drawFrame);
+    }
+
+    function toggleThermal() {
+      thermalEnabled = !thermalEnabled;
     }
 
     navigator.mediaDevices.getUserMedia({
@@ -81,16 +201,20 @@
     })
     .then(stream => {
       video.srcObject = stream;
-      video.play();
-      video.onloadedmetadata = () => drawFrame();
+      video.onloadedmetadata = () => {
+        video.play();
+        drawFrame();
+      };
     })
     .catch(err => {
       alert("Rear camera not available. Falling back to default.");
       navigator.mediaDevices.getUserMedia({ video: true })
         .then(stream => {
           video.srcObject = stream;
-          video.play();
-          video.onloadedmetadata = () => drawFrame();
+          video.onloadedmetadata = () => {
+            video.play();
+            drawFrame();
+          };
         })
         .catch(err => alert("Camera failed: " + err.message));
     });
