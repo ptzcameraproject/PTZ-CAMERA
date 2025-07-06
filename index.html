@@ -160,7 +160,7 @@
     video.setAttribute("playsinline", "");
     video.setAttribute("autoplay", "");
 
-    let filterMode = 0; // 0 = Regular, 1 = B/W, 2 = Thermal
+    let filterMode = 0; // 0 = Regular, 1 = B/W, 2 = Thermal Color
 
     function applyBlackWhite(imageData) {
       for (let i = 0; i < imageData.data.length; i += 4) {
@@ -199,25 +199,25 @@
       filterMode = (filterMode + 1) % 3;
     }
 
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-      .then(stream => {
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-          drawFrame();
-        };
-      })
-      .catch(err => {
-        alert("Rear camera not available. Using default.");
-        navigator.mediaDevices.getUserMedia({ video: true })
-          .then(stream => {
-            video.srcObject = stream;
-            video.onloadedmetadata = () => {
-              video.play();
-              drawFrame();
-            };
-          });
-      });
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { exact: "environment" } }
+    }).then(stream => {
+      video.srcObject = stream;
+      video.onloadedmetadata = () => {
+        video.play();
+        drawFrame();
+      };
+    }).catch(() => {
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          video.srcObject = stream;
+          video.onloadedmetadata = () => {
+            video.play();
+            drawFrame();
+          };
+        });
+    });
   </script>
+
 </body>
 </html>
