@@ -9,212 +9,145 @@
     body {
       background-color: #7E8A6A;
       font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0; text-align: center;
       color: black;
-      text-align: center;
     }
-    h1 {
-      font-size: 26px;
-      margin: 10px 0;
-    }
+    h1 { font-size: 26px; margin: 10px 0; }
     .main-row {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      padding: 0 10px;
-      flex-wrap: wrap;
+      display: flex; justify-content: center; align-items: center;
+      gap: 20px; padding: 0 10px; flex-wrap: wrap;
     }
-    .arrows {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 10px;
-    }
-    .arrow-row {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-    }
+    .arrows { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .arrow-row { display: flex; gap: 10px; }
     canvas {
-      width: 300px;
-      max-width: 90vw;
-      background: black;
+      width: 300px; max-width: 90vw; background: black;
       border: 4px solid white;
     }
     .tilt-slider {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: flex; flex-direction: column; align-items: center;
     }
-    .tilt-slider input {
-      writing-mode: bt-lr;
-      transform: rotate(270deg);
-      height: 140px;
-    }
+    .tilt-slider input { writing-mode: bt-lr; transform: rotate(270deg); height: 140px; }
     .sliders, .controls {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 15px;
+      display: flex; justify-content: center; flex-wrap: wrap;
+      gap: 10px; margin-top: 15px;
     }
-    .controls {
-      flex-direction: column;
-      align-items: center;
-    }
+    .controls { flex-direction: column; align-items: center; }
     .controls .buttons {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+      display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
     }
     button {
-      background-color: #C8D6AF;
-      border: none;
-      border-radius: 8px;
-      padding: 10px 16px;
-      font-size: 18px;
-      font-weight: bold;
-      box-shadow: 2px 2px 4px #444;
-      min-width: 60px;
+      background-color: #C8D6AF; border: none; border-radius: 8px;
+      padding: 10px 16px; font-size: 18px; font-weight: bold;
+      box-shadow: 2px 2px 4px #444; min-width: 60px;
     }
-    button:active {
-      background-color: #AAB694;
-    }
-    .hint {
-      font-size: 12px;
-      text-align: center;
-      margin-top: 5px;
-    }
-    label {
-      font-size: 14px;
-      font-weight: bold;
-    }
-    input[type="range"] {
-      accent-color: #444;
-    }
+    button:active { background-color: #AAB694; }
+    .hint { font-size: 12px; margin-top: 5px; }
+    label { font-size: 14px; font-weight: bold; }
+    input[type="range"] { accent-color: #444; }
   </style>
 </head>
 <body>
 
-<h1>DOGGY CAM</h1>
+  <h1>DOGGY CAM</h1>
 
-<div class="main-row">
-  <div class="arrows">
-    <button onclick="adjustTilt(1)">▲</button>
-    <div class="arrow-row">
-      <button onclick="adjustPan(-5)">◀</button>
-      <button onclick="adjustPan(5)">▶</button>
+  <div class="main-row">
+    <div class="arrows">
+      <button onclick="adjustTilt(1)">▲</button>
+      <div class="arrow-row">
+        <button onclick="adjustPan(-5)">◀</button>
+        <button onclick="adjustPan(5)">▶</button>
+      </div>
+      <button onclick="adjustTilt(-1)">▼</button>
     </div>
-    <button onclick="adjustTilt(-1)">▼</button>
+
+    <canvas id="canvas" width="320" height="240"></canvas>
+
+    <div class="tilt-slider">
+      <label for="tilt">Tilt (↕)</label>
+      <input type="range" id="tilt" min="-37.5" max="37.5" step="0.1" value="0" />
+    </div>
   </div>
 
-  <canvas id="canvas" width="320" height="240"></canvas>
-
-  <div class="tilt-slider">
-    <label for="tilt">Tilt (↕)</label>
-    <input type="range" id="tilt" min="-37.5" max="37.5" step="0.1" value="0" />
+  <div class="sliders">
+    <label for="pan">Pan (⇔)</label>
+    <input type="range" id="pan" min="-180" max="180" step="0.1" style="width:80%" value="0" />
   </div>
-</div>
 
-<div class="sliders">
-  <label for="pan">Pan (⇔)</label>
-  <input type="range" id="pan" min="-180" max="180" step="0.1" style="width: 80%;" value="0" />
-</div>
-
-<div class="controls">
-  <div class="buttons">
-    <button onclick="centerPan()">Center Pan</button>
-    <button onclick="centerAll()">Center All</button>
-    <button onclick="centerTilt()">Center Tilt</button>
-    <button onclick="exitPage()">Exit</button>
+  <div class="controls">
+    <div class="buttons">
+      <button onclick="centerPan()">Center Pan</button>
+      <button onclick="centerAll()">Center All</button>
+      <button onclick="centerTilt()">Center Tilt</button>
+      <button onclick="exitPage()">Exit</button>
+    </div>
+    <div class="hint">CTRL+P &nbsp;|&nbsp; CTRL+A &nbsp;|&nbsp; CTRL+T &nbsp;|&nbsp; CTRL+E</div>
+    <div style="margin-top:15px;">
+      <button onclick="toggleFilter()">Switch Filter</button>
+    </div>
   </div>
-  <div class="hint">CTRL+P &nbsp; | &nbsp; CTRL+A &nbsp; | &nbsp; CTRL+T &nbsp; | &nbsp; CTRL+E</div>
-  <div style="margin-top: 15px;">
-    <button onclick="toggleFilter()">Switch Filter</button>
-  </div>
-</div>
 
-<script>
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const video = document.createElement('video');
-video.setAttribute("playsinline", "");
-video.setAttribute("autoplay", "");
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const video = document.createElement('video');
+    video.playsInline = true; video.autoplay = true;
 
-let filterMode = 0; // 0 = white-hot, 1 = color-thermal
+    let filterMode = 0; // 0 = white-hot, 1 = color-thermal
 
-// White-hot uses a gamma curve to make mid-tones darker and highlights pop
-function applyWhiteHot(frame) {
-  const gamma = 0.4; 
-  for (let i = 0; i < frame.data.length; i += 4) {
-    const avg = (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3 / 255;
-    const w = Math.pow(avg, gamma) * 255;
-    frame.data[i] = frame.data[i+1] = frame.data[i+2] = w;
-  }
-}
+    function applyWhiteHot(frame) {
+      const threshold = 0.6;  // intensity above this becomes pure white
+      const gamma = 0.2;      // steep curve for midtones
+      for (let i = 0; i < frame.data.length; i += 4) {
+        let avg = (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3 / 255;
+        if (avg > threshold) {
+          // pure white for hot spots
+          frame.data[i] = frame.data[i+1] = frame.data[i+2] = 255;
+        } else {
+          // non-linear boost for other areas
+          let w = Math.pow(avg, gamma) * 255;
+          frame.data[i] = frame.data[i+1] = frame.data[i+2] = w;
+        }
+      }
+    }
 
-function applyColorThermal(frame) {
-  for (let i = 0; i < frame.data.length; i += 4) {
-    const avg = (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3;
-    const ratio = avg / 255;
-    const r = Math.max(0, 255 * (ratio - 0.5) * 2);
-    const g = Math.max(0, 255 * (1 - Math.abs(ratio - 0.5) * 2));
-    const b = Math.max(0, 255 * (0.5 - ratio) * 2);
-    frame.data[i] = r;
-    frame.data[i+1] = g;
-    frame.data[i+2] = b;
-  }
-}
+    function applyColorThermal(frame) {
+      for (let i = 0; i < frame.data.length; i += 4) {
+        const avg = (frame.data[i] + frame.data[i+1] + frame.data[i+2]) / 3;
+        const ratio = avg / 255;
+        const r = Math.max(0, 255*(ratio - 0.5)*2);
+        const g = Math.max(0, 255*(1 - Math.abs(ratio - 0.5)*2));
+        const b = Math.max(0, 255*(0.5 - ratio)*2);
+        frame.data[i] = r;
+        frame.data[i+1] = g;
+        frame.data[i+2] = b;
+      }
+    }
 
-function drawFrame() {
-  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  let frame = ctx.getImageData(0, 0, canvas.width, canvas.height);
-  if (filterMode === 0) applyWhiteHot(frame);
-  else applyColorThermal(frame);
-  ctx.putImageData(frame, 0, 0);
-  requestAnimationFrame(drawFrame);
-}
+    function drawFrame() {
+      ctx.drawImage(video,0,0,canvas.width,canvas.height);
+      let frame = ctx.getImageData(0,0,canvas.width,canvas.height);
+      if (filterMode===0) applyWhiteHot(frame);
+      else applyColorThermal(frame);
+      ctx.putImageData(frame,0,0);
+      requestAnimationFrame(drawFrame);
+    }
 
-function toggleFilter() {
-  filterMode = 1 - filterMode;
-}
+    function toggleFilter(){ filterMode = 1 - filterMode; }
 
-navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
-  .then(stream => {
-    video.srcObject = stream;
-    video.onloadedmetadata = () => {
-      video.play();
-      drawFrame();
-    };
-  })
-  .catch(() => {
-    navigator.mediaDevices.getUserMedia({ video: true })
-      .then(stream => {
-        video.srcObject = stream;
-        video.onloadedmetadata = () => {
-          video.play();
-          drawFrame();
-        };
-      });
-  });
+    navigator.mediaDevices.getUserMedia({video:{facingMode:"environment"}})
+      .then(s => { video.srcObject = s; video.onloadedmetadata = ()=>{video.play(); drawFrame()}; })
+      .catch(()=> navigator.mediaDevices.getUserMedia({video:true})
+        .then(s => { video.srcObject = s; video.onloadedmetadata = ()=>{video.play(); drawFrame()}; })
+      );
 
-// Controls
-function adjustTilt(delta) {
-  document.getElementById("tilt").value =
-    +document.getElementById("tilt").value + delta;
-}
-function adjustPan(delta) {
-  document.getElementById("pan").value =
-    +document.getElementById("pan").value + delta;
-}
-function centerTilt() { document.getElementById("tilt").value = 0; }
-function centerPan()  { document.getElementById("pan").value = 0; }
-function centerAll()  { centerTilt(); centerPan(); }
-function exitPage()   { window.close(); }
-</script>
+    // PTZ controls
+    function adjustTilt(d){ let t=document.getElementById('tilt'); t.value = +t.value + d; }
+    function adjustPan(d){ let p=document.getElementById('pan'); p.value = +p.value + d; }
+    function centerTilt(){document.getElementById('tilt').value = 0;}
+    function centerPan(){document.getElementById('pan').value = 0;}
+    function centerAll(){centerTilt();centerPan();}
+    function exitPage(){window.close();}
+  </script>
 
 </body>
 </html>
